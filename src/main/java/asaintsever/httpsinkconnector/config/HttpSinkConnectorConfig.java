@@ -23,6 +23,7 @@ public class HttpSinkConnectorConfig extends AbstractConfig {
     private static final String EVENT_GROUP = "Event";
     private static final String HTTP_GROUP = "HTTP";
     private static final String RETRIES_GROUP = "Retries";
+    private static final String ERRORS_GROUP = "Errors";
 
     // Event settings
     public static final String EVENT_MAX_BATCH_SIZE_CONFIG = "event.batch.maxsize";
@@ -84,7 +85,13 @@ public class HttpSinkConnectorConfig extends AbstractConfig {
     private static final int HTTP_REQ_RETRY_MAX_ATTEMPTS_DEFAULT = 5;
     public static final String HTTP_REQ_RETRY_MAX_ATTEMPTS_DISPLAYNAME = "HTTP Request Retry Max Attempts";
     public static final String HTTP_REQ_RETRY_MAX_ATTEMPTS_DOC = "Max number of retries for a errored request";
-        
+
+    public static final String BEHAVIOR_ON_ERROR = "behavior.on.error";
+    private static final String BEHAVIOR_ON_ERROR_DEFAULT = "fail";
+    public static final String BEHAVIOR_ON_ERROR_DISPLAYNAME = "Behavior on Error";
+    public static final String BEHAVIOR_ON_ERROR_DOC = "The behavior to adopt when an error occurs (after exhausting retries). Possible values are 'fail' or 'ignore'";
+    public static final String BEHAVIOR_ON_ERROR_FAIL = "fail";
+    public static final String BEHAVIOR_ON_ERROR_IGNORE = "ignore";
     
     public static ConfigDef configDef(Map<?, ?> originals) {
         ConfigDef connectorConfigDef = new ConfigDef()
@@ -102,6 +109,8 @@ public class HttpSinkConnectorConfig extends AbstractConfig {
                 .define(HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_CONFIG, Type.LONG, HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_DEFAULT, Importance.MEDIUM, HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_DOC, RETRIES_GROUP, 0, Width.SHORT, HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_DISPLAYNAME)
                 .define(HTTP_REQ_RETRY_EXPBACKOFF_MULTIPLIER_CONFIG, Type.DOUBLE, HTTP_REQ_RETRY_EXPBACKOFF_MULTIPLIER_DEFAULT, Importance.MEDIUM, HTTP_REQ_RETRY_EXPBACKOFF_MULTIPLIER_DOC, RETRIES_GROUP, 1, Width.SHORT, HTTP_REQ_RETRY_EXPBACKOFF_MULTIPLIER_DISPLAYNAME)
                 .define(HTTP_REQ_RETRY_MAX_ATTEMPTS_CONFIG, Type.INT, HTTP_REQ_RETRY_MAX_ATTEMPTS_DEFAULT, Importance.MEDIUM, HTTP_REQ_RETRY_MAX_ATTEMPTS_DOC, RETRIES_GROUP, 2, Width.SHORT, HTTP_REQ_RETRY_MAX_ATTEMPTS_DISPLAYNAME)
+                // Errors group
+                .define(BEHAVIOR_ON_ERROR, Type.STRING, BEHAVIOR_ON_ERROR_DEFAULT, Importance.MEDIUM, BEHAVIOR_ON_ERROR_DOC, ERRORS_GROUP, 3, Width.SHORT, BEHAVIOR_ON_ERROR_DISPLAYNAME)
                 ;
         
         // Add config defined for EVENT_FORMATTER_CLASS_CONFIG
@@ -176,6 +185,10 @@ public class HttpSinkConnectorConfig extends AbstractConfig {
     
     public Integer getHttpReqRetryMaxAttempts() {
         return getInt(HTTP_REQ_RETRY_MAX_ATTEMPTS_CONFIG);
+    }
+
+    public String getBehaviorOnError() {
+        return getString(BEHAVIOR_ON_ERROR);
     }
     
 

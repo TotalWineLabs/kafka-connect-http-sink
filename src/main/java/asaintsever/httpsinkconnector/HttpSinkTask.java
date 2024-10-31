@@ -71,7 +71,10 @@ public class HttpSinkTask extends SinkTask {
             log.warn("Write of {} records failed, retry={}/{}", records.size(), this.retryIndex, this.config.getHttpReqRetryMaxAttempts(), e);
             
             if (this.retryIndex == this.config.getHttpReqRetryMaxAttempts()) {
-                throw new ConnectException(e);
+                if (this.config.getBehaviorOnError().equals(HttpSinkConnectorConfig.BEHAVIOR_ON_ERROR_FAIL)) {
+                    throw new ConnectException(e);
+                }
+                
             } else {
                 this.context.timeout(this.config.getHttpReqRetryExpBackoffBaseIntervalMs() * (this.retryIndex == 0 ? 1 : (long) (Math.pow(this.config.getHttpReqRetryExpBackoffMultiplier(), this.retryIndex))));
                 this.retryIndex++;
