@@ -43,6 +43,11 @@ public class HttpSinkConnectorConfig extends AbstractConfig {
     public static final String HTTP_ENDPOINT_DISPLAYNAME = "HTTP Endpoint";
     public static final String HTTP_ENDPOINT_DOC = "The URI where the connector should try to send the data";
     
+    public static final String HTTP_MAX_CONCURRENT_CONFIG = "http.max.concurrent";
+    private static final int HTTP_MAX_CONCURRENT_CONFIG_DEFAULT = 1;
+    public static final String HTTP_MAX_CONCURRENT_CONFIG_DISPLAYNAME = "Max Concurrent Requests";
+    public static final String HTTP_MAX_CONCURRENT_CONFIG_DOC = "The maximum number of requests that can be made concurrently.";
+
     public static final String HTTP_CONNECT_TIMEOUT_CONFIG = "http.timeout.connect.ms";
     private static final long HTTP_CONNECT_TIMEOUT_DEFAULT = 60000;
     public static final String HTTP_CONNECT_TIMEOUT_DISPLAYNAME = "HTTP Connect Timeout (ms)";
@@ -105,6 +110,7 @@ public class HttpSinkConnectorConfig extends AbstractConfig {
                 .define(HTTP_REQ_CONTENT_TYPE_CONFIG, Type.STRING, HTTP_REQ_CONTENT_TYPE_DEFAULT, Importance.MEDIUM, HTTP_REQ_CONTENT_TYPE_DOC, HTTP_GROUP, 3, Width.MEDIUM, HTTP_REQ_CONTENT_TYPE_DISPLAYNAME)
                 .define(HTTP_REQ_AUTHENTICATION_PROVIDER_CLASS_CONFIG, Type.STRING, HTTP_REQ_AUTHENTICATION_PROVIDER_CLASS_DEFAULT, new ClassValidator(IAuthenticationProvider.class), Importance.MEDIUM, HTTP_REQ_AUTHENTICATION_PROVIDER_CLASS_DOC, HTTP_GROUP, 4, Width.MEDIUM, HTTP_REQ_AUTHENTICATION_PROVIDER_CLASS_DISPLAYNAME)
                 .define(HTTP_RESP_VALID_STATUS_CODES_CONFIG, Type.LIST, HTTP_RESP_VALID_STATUS_CODES_DEFAULT, Importance.HIGH, HTTP_RESP_VALID_STATUS_CODES_DOC, HTTP_GROUP, 5, Width.SHORT, HTTP_RESP_VALID_STATUS_CODES_DISPLAYNAME)
+                .define(HTTP_MAX_CONCURRENT_CONFIG, Type.INT, HTTP_MAX_CONCURRENT_CONFIG_DEFAULT, Importance.LOW, HTTP_MAX_CONCURRENT_CONFIG_DOC, HTTP_GROUP, 6, Width.SHORT, HTTP_MAX_CONCURRENT_CONFIG_DISPLAYNAME)
                 // Retries group
                 .define(HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_CONFIG, Type.LONG, HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_DEFAULT, Importance.MEDIUM, HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_DOC, RETRIES_GROUP, 0, Width.SHORT, HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_DISPLAYNAME)
                 .define(HTTP_REQ_RETRY_EXPBACKOFF_MULTIPLIER_CONFIG, Type.DOUBLE, HTTP_REQ_RETRY_EXPBACKOFF_MULTIPLIER_DEFAULT, Importance.MEDIUM, HTTP_REQ_RETRY_EXPBACKOFF_MULTIPLIER_DOC, RETRIES_GROUP, 1, Width.SHORT, HTTP_REQ_RETRY_EXPBACKOFF_MULTIPLIER_DISPLAYNAME)
@@ -153,6 +159,10 @@ public class HttpSinkConnectorConfig extends AbstractConfig {
     
     public String getHttpEndpoint() {
         return getString(HTTP_ENDPOINT_CONFIG);
+    }
+
+    public Integer getHttpMaxConcurrent() {
+        return getInt(HTTP_MAX_CONCURRENT_CONFIG);
     }
     
     public Long getHttpConnectTimeout() {

@@ -2,7 +2,7 @@
 
 The HTTP Sink Connector is a sample implementation of a Kafka Connect connector. This is a `sink` connector, reading events from kafka topics to send them to some HTTP endpoint.
 
-Using connector's configuration, you can set the list of Kafka topics to read from and the target HTTP endpoint (only one supported in this implementation). You can also provide your own event formatters (see default [PassthroughStringEventFormatter](src/main/java/asaintsever/httpsinkconnector/event/formatter/PassthroughStringEventFormatter.java) as an example) and HTTP authentication providers (see default [NoAuthenticationProvider](src/main/java/asaintsever/httpsinkconnector/http/authentication/NoAuthenticationProvider.java) and [ConfigAuthenticationProvider](src/main/java/asaintsever/httpsinkconnector/http/authentication/ConfigAuthenticationProvider.java) as examples).
+Using connector's configuration, you can set the list of Kafka topics to read from and the target HTTP endpoint (only one supported in this implementation). You can also provide your own event formatters (see default [PassthroughStringEventFormatter](src/main/java/asaintsever/httpsinkconnector/event/formatter/PassthroughStringEventFormatter.java) as an example) and HTTP authentication providers (see default [NoAuthenticationProvider](src/main/java/asaintsever/httpsinkconnector/http/authentication/NoAuthenticationProvider.java), [ConfigAuthenticationProvider](src/main/java/asaintsever/httpsinkconnector/http/authentication/ConfigAuthenticationProvider.java), and [GCPAuthenticationProvider](src/main/java/asaintsever/httpsinkconnector/http/authentication/GCPAuthenticationProvider.java) as examples).
 
 This connector will batch events before sending them in order to reduce the number of calls and not overwhelm the HTTP endpoint.
 
@@ -28,6 +28,7 @@ Here is the complete list of properties you can set on the connector. You can fi
 | `event.formatter.class` | asaintsever.httpsinkconnector.event.formatter.PassthroughStringEventFormatter | The name of the class to format the event. This class should implement the interface IEventFormatter |
 | `event.formatter.param.*` | | Event formatter's properties |
 | `http.endpoint` | | The URI where the connector should try to send the data |
+| `http.max.concurrent` | 1 | The maximum number of requests that can be made concurrently |
 | `http.timeout.connect.ms` | 60000 | HTTP connect timeout in ms when connecting to HTTP endpoint |
 | `http.timeout.read.ms` | 60000 | HTTP read timeout in ms when reading response from HTTP endpoint |
 | `http.request.content.type` | "application/json" | The value of Content-Type header for HTTP request |
@@ -37,6 +38,7 @@ Here is the complete list of properties you can set on the connector. You can fi
 | `http.request.retry.exp.backoff.base.interval.ms` | 5000 | The exponential backoff retry base interval in ms for a errored request |
 | `http.request.retry.exp.backoff.multiplier` | 2.5 | The exponential backoff retry multiplier for a errored request |
 | `http.request.retry.maxattempts` | 5 | Max number of retries for a errored request |
+| `behavior.on.error` | 'fail' | The behavior to adopt when an error occurs (after exhausting retries). Possible values are `fail` or `ignore`` |
 
 ## Build
 

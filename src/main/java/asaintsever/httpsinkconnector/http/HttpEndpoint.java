@@ -11,6 +11,8 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.slf4j.Logger;
@@ -28,13 +30,15 @@ public class HttpEndpoint {
     private final long connectTimeout;
     private final long readTimeout;
     private final int batchSize;
+    private final int maxConcurrent;
     private final IAuthenticationProvider authenticationProvider;
     private final String contentType;
     private final IEventFormatter eventFormatter;
     private final List<Integer> validStatusCodes;
+    private ExecutorService executor;
+    HttpClient httpClient;
     
-    private List<SinkRecord> batch = new ArrayList<>();
-       
+    private List<List<SinkRecord>> batches = new ArrayList<>();
     
     public HttpEndpoint(
             String endpoint,
@@ -43,7 +47,9 @@ public class HttpEndpoint {
             IAuthenticationProvider authenticationProvider,
             String contentType,
             IEventFormatter eventFormatter,
-            List<Integer> validStatusCodes) {
+            List<Integer> validStatusCodes,
+            ExecutorService executor,
+            int maxConcurrent) {
         this.endpoint = endpoint;
         this.connectTimeout = connectTimeout;
         this.readTimeout = readTimeout;
@@ -52,47 +58,72 @@ public class HttpEndpoint {
         this.contentType = contentType;
         this.eventFormatter = eventFormatter;
         this.validStatusCodes = validStatusCodes;
+        this.executor = executor;
+        this.maxConcurrent = maxConcurrent;
+        this.httpClient = HttpClient.newBuilder()
+                                    .connectTimeout(Duration.ofMillis(this.connectTimeout))
+                                    .build();
+
     }
     
     
     public void write(Collection<SinkRecord> records) throws IOException, InterruptedException {
+        List<SinkRecord> batch = new ArrayList<>();
         for (SinkRecord record : records) {
-            this.batch.add(record);
+            batch.add(record);
             
-            // We got a complete batch: send it
-            if (this.batch.size() >= this.batchSize) {
-                this.sendBatch();
+            // We got a complete batch
+            if (batch.size() >= this.batchSize) {
+                this.batches.add(batch);
+                batch = new ArrayList<>();
+            }
+
+            if (this.batches.size() >= this.maxConcurrent) {
+                this.sendBatches();
             }
         }
-        
-        // Send remaining records in one last batch (the records left if not enough to constitute a full batch)
-        this.sendBatch();
+        this.sendBatches();
+    }
+
+    private void sendBatches() throws IOException, InterruptedException {
+        if (this.batches.isEmpty())
+            return;
+        List<Future<HttpResponse<String>>> futures = new ArrayList<>();
+        for (List<SinkRecord> batch : this.batches) {
+            if (batch.isEmpty())
+                continue;
+            futures.add(executor.submit(() -> sendBatch(batch)));
+        }
+        try {
+            for (Future<HttpResponse<String>> future : futures) {
+                future.get();         
+            }
+        }
+        catch (Exception e) {
+            throw new IOException("Error while sending batch requests", e);
+        }
+        finally {
+            this.batches.clear();
+        }
     }
     
-    private void sendBatch() throws IOException, InterruptedException {
-        // Skip if batch list is empty
-        if (this.batch.isEmpty())
-            return;
-        
-        log.info("Sending batch of {} events to {}", this.batch.size(), this.endpoint);
+    private HttpResponse<String> sendBatch(List<SinkRecord> batch) throws IOException, InterruptedException {        
+        log.debug("Sending batch of {} events to {}", batch.size(), this.endpoint);
         
         HttpResponse<String> resp;
         
         try {
-            resp = this.invoke(this.eventFormatter.formatEventBatch(this.batch));
+            resp = this.invoke(this.eventFormatter.formatEventBatch(batch));
         } catch(AuthException authEx) {
             throw new HttpResponseException(this.endpoint, "Authentication error: " + authEx.getMessage());
-        } finally {
-            // Flush batch list
-            this.batch.clear();
         }
         
         // Check status code
         if (resp != null) {
             for(int statusCode : this.validStatusCodes) {
                 if (statusCode == resp.statusCode()) {
-                    log.info("Response from HTTP endpoint {}: {} (status code: {})", this.endpoint, resp.body(), resp.statusCode());
-                    return;
+                    log.debug("Response from HTTP endpoint {}: {} (status code: {})", this.endpoint, resp.body(), resp.statusCode());
+                    return resp;
                 }
             }
         }
@@ -100,12 +131,7 @@ public class HttpEndpoint {
         throw new HttpResponseException(this.endpoint, "Invalid response from HTTP endpoint", resp);
     }
     
-    private HttpResponse<String> invoke(byte[] data) throws AuthException, IOException, InterruptedException {       
-        HttpClient httpCli = HttpClient.newBuilder()
-                //.version(Version.HTTP_1_1)
-                .connectTimeout(Duration.ofMillis(this.connectTimeout))
-                .build();
-        
+    private HttpResponse<String> invoke(byte[] data) throws AuthException, IOException, InterruptedException {               
         HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
                 .uri(URI.create(this.endpoint))
                 .timeout(Duration.ofMillis(this.readTimeout))
@@ -117,7 +143,7 @@ public class HttpEndpoint {
         if (this.authenticationProvider.addAuthentication() != null)
             reqBuilder.headers(this.authenticationProvider.addAuthentication());
         
-        return httpCli.send(reqBuilder.build(), BodyHandlers.ofString());
+        return this.httpClient.send(reqBuilder.build(), BodyHandlers.ofString());
     }
     
 }
