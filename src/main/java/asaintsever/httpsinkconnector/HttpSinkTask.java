@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.errors.RetriableException;
+import org.apache.kafka.connect.errors.DataException;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTask;
 import org.slf4j.Logger;
@@ -68,7 +69,8 @@ public class HttpSinkTask extends SinkTask {
             return;
         }
         
-        log.debug("Received {} records", records.size());
+        if(this.config.getHttpLogReceivedRecordsEnabled())
+            log.info("Received {} records", records.size());
         
         try {
             this.endpoint.write(records);
@@ -78,6 +80,9 @@ public class HttpSinkTask extends SinkTask {
             if (this.retryIndex == this.config.getHttpReqRetryMaxAttempts()) {
                 if (this.config.getBehaviorOnError().equals(HttpSinkConnectorConfig.BEHAVIOR_ON_ERROR_FAIL)) {
                     throw new ConnectException(e);
+                }
+                else {
+                    throw new DataException(e);
                 }
                 
             } else {

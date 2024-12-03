@@ -38,7 +38,8 @@ Here is the complete list of properties you can set on the connector. You can fi
 | `http.request.retry.exp.backoff.base.interval.ms` | 5000 | The exponential backoff retry base interval in ms for a errored request |
 | `http.request.retry.exp.backoff.multiplier` | 2.5 | The exponential backoff retry multiplier for a errored request |
 | `http.request.retry.maxattempts` | 5 | Max number of retries for a errored request |
-| `behavior.on.error` | 'fail' | The behavior to adopt when an error occurs (after exhausting retries). Possible values are `fail` or `ignore`` |
+| `http.log.received.records.enabled` | false | Enable logging of received records |
+| `behavior.on.error` | 'fail' | The behavior to adopt when an error occurs (after exhausting retries). Possible values are `fail` or `ignore`. Set to `ignore` when routing failures to DLQ via `errors.deadletterqueue.topic.name`  |
 
 ## Build
 
