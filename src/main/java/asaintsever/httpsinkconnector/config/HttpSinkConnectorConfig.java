@@ -75,6 +75,11 @@ public class HttpSinkConnectorConfig extends AbstractConfig {
     public static final String HTTP_RESP_VALID_STATUS_CODES_DISPLAYNAME = "Valid HTTP Response Status Codes";
     public static final String HTTP_RESP_VALID_STATUS_CODES_DOC = "A list with the HTTP response status codes indicating success";
 
+    public static final String HTTP_LOG_RECEIVED_RECORDS_ENABLED = "http.log.received.records.enabled";
+    private static final Boolean HTTP_LOG_RECEIVED_RECORDS_ENABLED_DEFAULT = false;
+    public static final String HTTP_LOG_RECEIVED_RECORDS_ENABLED_DISPLAYNAME = "Enable loggin of received records";
+    public static final String HTTP_LOG_RECEIVED_RECORDS_ENABLED_DOC = "Log received records to the connector log";
+
     // Retries settings
     public static final String HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_CONFIG = "http.request.retry.exp.backoff.base.interval.ms";
     private static final long HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_DEFAULT = 5000;
@@ -111,6 +116,7 @@ public class HttpSinkConnectorConfig extends AbstractConfig {
                 .define(HTTP_REQ_AUTHENTICATION_PROVIDER_CLASS_CONFIG, Type.STRING, HTTP_REQ_AUTHENTICATION_PROVIDER_CLASS_DEFAULT, new ClassValidator(IAuthenticationProvider.class), Importance.MEDIUM, HTTP_REQ_AUTHENTICATION_PROVIDER_CLASS_DOC, HTTP_GROUP, 4, Width.MEDIUM, HTTP_REQ_AUTHENTICATION_PROVIDER_CLASS_DISPLAYNAME)
                 .define(HTTP_RESP_VALID_STATUS_CODES_CONFIG, Type.LIST, HTTP_RESP_VALID_STATUS_CODES_DEFAULT, Importance.HIGH, HTTP_RESP_VALID_STATUS_CODES_DOC, HTTP_GROUP, 5, Width.SHORT, HTTP_RESP_VALID_STATUS_CODES_DISPLAYNAME)
                 .define(HTTP_MAX_CONCURRENT_CONFIG, Type.INT, HTTP_MAX_CONCURRENT_CONFIG_DEFAULT, Importance.LOW, HTTP_MAX_CONCURRENT_CONFIG_DOC, HTTP_GROUP, 6, Width.SHORT, HTTP_MAX_CONCURRENT_CONFIG_DISPLAYNAME)
+                .define(HTTP_LOG_RECEIVED_RECORDS_ENABLED, Type.BOOLEAN, HTTP_LOG_RECEIVED_RECORDS_ENABLED_DEFAULT, Importance.LOW, HTTP_LOG_RECEIVED_RECORDS_ENABLED_DOC, HTTP_GROUP, 7, Width.SHORT, HTTP_LOG_RECEIVED_RECORDS_ENABLED_DISPLAYNAME)
                 // Retries group
                 .define(HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_CONFIG, Type.LONG, HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_DEFAULT, Importance.MEDIUM, HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_DOC, RETRIES_GROUP, 0, Width.SHORT, HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_DISPLAYNAME)
                 .define(HTTP_REQ_RETRY_EXPBACKOFF_MULTIPLIER_CONFIG, Type.DOUBLE, HTTP_REQ_RETRY_EXPBACKOFF_MULTIPLIER_DEFAULT, Importance.MEDIUM, HTTP_REQ_RETRY_EXPBACKOFF_MULTIPLIER_DOC, RETRIES_GROUP, 1, Width.SHORT, HTTP_REQ_RETRY_EXPBACKOFF_MULTIPLIER_DISPLAYNAME)
@@ -183,6 +189,10 @@ public class HttpSinkConnectorConfig extends AbstractConfig {
     
     public List<Integer> getHttpRespValidStatusCodes() {
         return getList(HTTP_RESP_VALID_STATUS_CODES_CONFIG).stream().map(Integer::parseInt).collect(Collectors.toList());
+    }
+
+    public Boolean getHttpLogReceivedRecordsEnabled() {
+        return getBoolean(HTTP_LOG_RECEIVED_RECORDS_ENABLED);
     }
     
     public Long getHttpReqRetryExpBackoffBaseIntervalMs() {

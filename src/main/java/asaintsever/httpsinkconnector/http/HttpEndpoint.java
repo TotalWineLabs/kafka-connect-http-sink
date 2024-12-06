@@ -82,6 +82,13 @@ public class HttpEndpoint {
                 this.sendBatches();
             }
         }
+
+        // Add any remaining records
+        if (!batch.isEmpty()) {
+            this.batches.add(batch);
+        }
+
+        // Ensure remaining batches are sent
         this.sendBatches();
     }
 
