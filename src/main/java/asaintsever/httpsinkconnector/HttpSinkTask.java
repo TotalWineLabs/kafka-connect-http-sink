@@ -81,9 +81,6 @@ public class HttpSinkTask extends SinkTask {
                 if (this.config.getBehaviorOnError().equals(HttpSinkConnectorConfig.BEHAVIOR_ON_ERROR_FAIL)) {
                     throw new ConnectException(e);
                 }
-                else {
-                    throw new DataException(e);
-                }
                 
             } else {
                 // This retry behavior is not ideal when using max.concurrent > 1
