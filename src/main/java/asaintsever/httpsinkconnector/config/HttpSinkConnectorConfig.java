@@ -75,9 +75,9 @@ public class HttpSinkConnectorConfig extends AbstractConfig {
     public static final String HTTP_RESP_VALID_STATUS_CODES_DISPLAYNAME = "Valid HTTP Response Status Codes";
     public static final String HTTP_RESP_VALID_STATUS_CODES_DOC = "A list with the HTTP response status codes indicating success";
 
-    public static final String HTTP_LOG_RECEIVED_RECORDS_ENABLED = "http.log.received.records.enabled";
+    public static final String HTTP_LOG_RECEIVED_RECORDS_ENABLED_CONFIG = "http.log.received.records.enabled";
     private static final Boolean HTTP_LOG_RECEIVED_RECORDS_ENABLED_DEFAULT = false;
-    public static final String HTTP_LOG_RECEIVED_RECORDS_ENABLED_DISPLAYNAME = "Enable loggin of received records";
+    public static final String HTTP_LOG_RECEIVED_RECORDS_ENABLED_DISPLAYNAME = "Enable logging of received records";
     public static final String HTTP_LOG_RECEIVED_RECORDS_ENABLED_DOC = "Log received records to the connector log";
 
     // Retries settings
@@ -95,6 +95,11 @@ public class HttpSinkConnectorConfig extends AbstractConfig {
     private static final int HTTP_REQ_RETRY_MAX_ATTEMPTS_DEFAULT = 5;
     public static final String HTTP_REQ_RETRY_MAX_ATTEMPTS_DISPLAYNAME = "HTTP Request Retry Max Attempts";
     public static final String HTTP_REQ_RETRY_MAX_ATTEMPTS_DOC = "Max number of retries for a errored request";
+
+    public static final String HTTP_REQ_RETRY_MAX_DURATION_MS_CONFIG = "http.request.retry.maxduration.ms";
+    private static final int HTTP_REQ_RETRY_MAX_DURATION_MS_DEFAULT = 300000; // 5 min
+    public static final String HTTP_REQ_RETRY_MAX_DURATION_MS_DISPLAYNAME = "HTTP Request Retry Max Duration";
+    public static final String HTTP_REQ_RETRY_MAX_DURATION_MS_DOC = "The time limit for retrying a failed task, measured from when the task was first attempted.";
 
     public static final String BEHAVIOR_ON_ERROR = "behavior.on.error";
     private static final String BEHAVIOR_ON_ERROR_DEFAULT = "fail";
@@ -116,11 +121,12 @@ public class HttpSinkConnectorConfig extends AbstractConfig {
                 .define(HTTP_REQ_AUTHENTICATION_PROVIDER_CLASS_CONFIG, Type.STRING, HTTP_REQ_AUTHENTICATION_PROVIDER_CLASS_DEFAULT, new ClassValidator(IAuthenticationProvider.class), Importance.MEDIUM, HTTP_REQ_AUTHENTICATION_PROVIDER_CLASS_DOC, HTTP_GROUP, 4, Width.MEDIUM, HTTP_REQ_AUTHENTICATION_PROVIDER_CLASS_DISPLAYNAME)
                 .define(HTTP_RESP_VALID_STATUS_CODES_CONFIG, Type.LIST, HTTP_RESP_VALID_STATUS_CODES_DEFAULT, Importance.HIGH, HTTP_RESP_VALID_STATUS_CODES_DOC, HTTP_GROUP, 5, Width.SHORT, HTTP_RESP_VALID_STATUS_CODES_DISPLAYNAME)
                 .define(HTTP_MAX_CONCURRENT_CONFIG, Type.INT, HTTP_MAX_CONCURRENT_CONFIG_DEFAULT, Importance.LOW, HTTP_MAX_CONCURRENT_CONFIG_DOC, HTTP_GROUP, 6, Width.SHORT, HTTP_MAX_CONCURRENT_CONFIG_DISPLAYNAME)
-                .define(HTTP_LOG_RECEIVED_RECORDS_ENABLED, Type.BOOLEAN, HTTP_LOG_RECEIVED_RECORDS_ENABLED_DEFAULT, Importance.LOW, HTTP_LOG_RECEIVED_RECORDS_ENABLED_DOC, HTTP_GROUP, 7, Width.SHORT, HTTP_LOG_RECEIVED_RECORDS_ENABLED_DISPLAYNAME)
+                .define(HTTP_LOG_RECEIVED_RECORDS_ENABLED_CONFIG, Type.BOOLEAN, HTTP_LOG_RECEIVED_RECORDS_ENABLED_DEFAULT, Importance.LOW, HTTP_LOG_RECEIVED_RECORDS_ENABLED_DOC, HTTP_GROUP, 7, Width.SHORT, HTTP_LOG_RECEIVED_RECORDS_ENABLED_DISPLAYNAME)
                 // Retries group
                 .define(HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_CONFIG, Type.LONG, HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_DEFAULT, Importance.MEDIUM, HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_DOC, RETRIES_GROUP, 0, Width.SHORT, HTTP_REQ_RETRY_EXPBACKOFF_BASE_INTERVAL_MS_DISPLAYNAME)
                 .define(HTTP_REQ_RETRY_EXPBACKOFF_MULTIPLIER_CONFIG, Type.DOUBLE, HTTP_REQ_RETRY_EXPBACKOFF_MULTIPLIER_DEFAULT, Importance.MEDIUM, HTTP_REQ_RETRY_EXPBACKOFF_MULTIPLIER_DOC, RETRIES_GROUP, 1, Width.SHORT, HTTP_REQ_RETRY_EXPBACKOFF_MULTIPLIER_DISPLAYNAME)
                 .define(HTTP_REQ_RETRY_MAX_ATTEMPTS_CONFIG, Type.INT, HTTP_REQ_RETRY_MAX_ATTEMPTS_DEFAULT, Importance.MEDIUM, HTTP_REQ_RETRY_MAX_ATTEMPTS_DOC, RETRIES_GROUP, 2, Width.SHORT, HTTP_REQ_RETRY_MAX_ATTEMPTS_DISPLAYNAME)
+                .define(HTTP_REQ_RETRY_MAX_DURATION_MS_CONFIG, Type.LONG, HTTP_REQ_RETRY_MAX_DURATION_MS_DEFAULT, Importance.MEDIUM, HTTP_REQ_RETRY_MAX_DURATION_MS_DOC, RETRIES_GROUP, 3, Width.SHORT, HTTP_REQ_RETRY_MAX_DURATION_MS_DISPLAYNAME)
                 // Errors group
                 .define(BEHAVIOR_ON_ERROR, Type.STRING, BEHAVIOR_ON_ERROR_DEFAULT, Importance.MEDIUM, BEHAVIOR_ON_ERROR_DOC, ERRORS_GROUP, 3, Width.SHORT, BEHAVIOR_ON_ERROR_DISPLAYNAME)
                 ;
@@ -191,8 +197,8 @@ public class HttpSinkConnectorConfig extends AbstractConfig {
         return getList(HTTP_RESP_VALID_STATUS_CODES_CONFIG).stream().map(Integer::parseInt).collect(Collectors.toList());
     }
 
-    public Boolean getHttpLogReceivedRecordsEnabled() {
-        return getBoolean(HTTP_LOG_RECEIVED_RECORDS_ENABLED);
+    public Boolean getHttpLogReceivedRecordsEnabledConfig() {
+        return getBoolean(HTTP_LOG_RECEIVED_RECORDS_ENABLED_CONFIG);
     }
     
     public Long getHttpReqRetryExpBackoffBaseIntervalMs() {
@@ -205,6 +211,10 @@ public class HttpSinkConnectorConfig extends AbstractConfig {
     
     public Integer getHttpReqRetryMaxAttempts() {
         return getInt(HTTP_REQ_RETRY_MAX_ATTEMPTS_CONFIG);
+    }
+
+    public Long getHttpReqRetryMaxDurationMs() {
+        return getLong(HTTP_REQ_RETRY_MAX_DURATION_MS_CONFIG);
     }
 
     public String getBehaviorOnError() {

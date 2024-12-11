@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 
-VERSION:=1.2.5
+VERSION:=1.2.7
 FQIN:=asaintsever/kafkaconnect-httpsinkconnector:$(VERSION)
 CONTAINER_RUNTIME:=$(shell command -v docker 2> /dev/null || echo podman)	# Use docker by default if found, else try podman
 
