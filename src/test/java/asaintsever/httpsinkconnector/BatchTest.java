@@ -50,7 +50,7 @@ public class BatchTest {
     public void setUp() {
         Map<String, String> props = Map.of(
             "http.log.received.records.enabled", "true",
-            "http.endpoint", "https://api-generator.retool.com/sOZhzC/data",
+            "http.endpoint", "https://api-generator.retool.com/sOZhzC/data", // TODO: mock a server
             "http.max.concurrent", "1",
             "http.resp.valid.status.codes", "200,201,202,204",
             "http.request.retry.maxattempts", "2"
