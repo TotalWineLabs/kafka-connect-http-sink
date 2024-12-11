@@ -36,6 +36,7 @@ Here is the complete list of properties you can set on the connector. You can fi
 | `http.request.authentication.provider.param.*` | | HTTP authentication provider's properties |
 | `http.response.valid.status.codes` | 200,201,202,204 | A list with the HTTP response status codes indicating success |
 | `http.request.retry.exp.backoff.base.interval.ms` | 5000 | The exponential backoff retry base interval in ms for a errored request |
+| `http.request.retry.maxduration.ms` | 300000 | The time limit for retrying a failed request, measured from when the request was first attempted |
 | `http.request.retry.exp.backoff.multiplier` | 2.5 | The exponential backoff retry multiplier for a errored request |
 | `http.request.retry.maxattempts` | 5 | Max number of retries for a errored request |
 | `http.log.received.records.enabled` | false | Enable logging of received records |
